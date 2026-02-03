@@ -1,6 +1,6 @@
   import { useEffect, useState } from "react";
-  import { Card, CardContent } from "./ui/card";
-  import { Button } from "./ui/button";
+  import { Card, CardContent } from "./ui/Card";
+  import { Button } from "./ui/Button";
 
   const API_BASE = "https://a49sbz67r1.execute-api.us-east-1.amazonaws.com"; // ← tu API Gateway
 
