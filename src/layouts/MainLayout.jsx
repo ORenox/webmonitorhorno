@@ -1,4 +1,4 @@
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/ui/Sidebar";
 import { useState } from "react";
 
 function MainLayout({ children }) {
