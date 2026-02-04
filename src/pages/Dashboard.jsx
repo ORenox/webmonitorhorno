@@ -1,24 +1,31 @@
-import DashboardIoT from "../components/DashBoardIoT";
+import DashboardIoT from "../components/TagsForTags";
 import Example from "../components/Example";
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 const API_BASE = "https://a49sbz67r1.execute-api.us-east-1.amazonaws.com";
 
 const tagsConfig = [
-  { key: "M..1:36-1", label: "Pistón" },
-  { key: "M..1:37-1", label: "Motor" },
-  { key: "M..1:39-1", label: "Gata" },
-  { key: "M..1:38-1", label: "Resistencias" },
-  { key: "I..1:10-1", label: "Emergencia", readOnly: true }
+  { key: "Q..1:8-1", label: "Motor Centrifugadora", readOnly: true},
+  { key: "Q..1:10-1", label: "Piston centrifugadora", readOnly: true},
+  { key: "Q..1:9-1", label: "Resistencias vulcanizadora", readOnly: true },
+  { key: "Q..1:12-1", label: "motor Vulcanizadora", readOnly: true },
+
+  { key: "AI..4:1-1", label: "Presión", type: "analog", offset: -200, gain: 1.25 ,  unit:"PSI" },   
+  { key: "AI..4:3-1", label: "Temperatura", type: "analog", offset: 0, gain: 0.1 , unit: "°C" },
+  { key: "AM..4:2-1", label: "Tiempo Horno centrífugo", type: "analog", offset: 60,gain:1, unit: "s" },
+  { key: "AM..4:1-1", label: "Tiempo Vulcanización", type: "analog", offset: 60,gain:1, unit: "s" },
+
+  { key: "I..1:10-1", label: "Emergencia", readOnly: true },
 ];
 
 
-const MODE_TAG = "M..1:40-1";
-const MACHINE_TAG = "M..1:41-1";
+const MODE_TAG = "Q..1:5-1";
+const MACHINE_TAG = "Q..1:4-1";
 
 function Dashboard() {
     const [shadow, setShadow] = useState({});
     const [loading, setLoading] = useState(false);
+
 
     // ================= SHADOW =================
   const fetchShadow = async () => {
@@ -92,41 +99,43 @@ function Dashboard() {
           </div>
         </div>
       </div>
-
-
-      {/* ===== CONTROL DE DISPOSITIVOS ===== */}
+      {/* ===== TARJETAS DE TAGS ===== */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {tagsConfig.map(tag => {
-          const value = shadow[tag.key] ?? "--";
-          const isOn = value === "01";
+            const rawValue = shadow[tag.key];
+            const isOn = rawValue === "01";
 
-          return (
-            <div key={tag.key} className="bg-white rounded-2xl shadow-lg">
-              <div className="p-6 flex flex-col gap-4">
-                <h2 className="text-xl font-semibold">{tag.label}</h2>
+            let displayValue = "--";
 
-                <p className="text-lg">
-                  Estado:{" "}
-                  <span className={isOn ? "text-green-600" : "text-red-600"}>
-                    {isOn ? "ENCENDIDO" : "APAGADO"}
-                  </span>
-                </p>
-                {/*
-                {!tag.readOnly && (
-                  <div className="flex gap-2">
-                    <button disabled={loading} onClick={() => updateTag(tag.key, "01")}>
-                      Encender
-                    </button>
-                    <button disabled={loading} onClick={() => updateTag(tag.key, "00")}>
-                      Apagar
-                    </button>
-                  </div>
-                )}
-                */ }
+            if (tag.type === "analog" && rawValue) {
+              const decimal = parseInt(rawValue, 16);
+              const scaled = (decimal+tag.offset) * (tag.gain);
+              displayValue = scaled.toFixed(1);
+            }
+
+            return (
+              <div key={tag.key} className="bg-white rounded-2xl shadow-lg">
+                <div className="p-6 flex flex-col gap-4">
+                  <h2 className="text-xl font-semibold">{tag.label}</h2>
+
+                  {tag.type === "analog" ? (
+                    <p className="text-lg text-blue-600">
+                      {displayValue}{tag.unit}
+                      
+                    </p>
+                  ) : (
+                    <p className="text-lg">
+                      Estado:{" "}
+                      <span className={isOn ? "text-green-600" : "text-red-600"}>
+                        {isOn ? "ENCENDIDO" : "APAGADO"}
+                      </span>
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+
       </div>
       
     </div>

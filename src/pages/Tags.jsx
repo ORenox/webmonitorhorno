@@ -1,9 +1,9 @@
-import DashboardIoT from "../components/DashBoardIoT";
+import TagsForTags from "../components/TagsForTags";
 
 function Tags() {
   return <>
     <h1 className="text-2xl font-bold">Estado de los tags</h1>
-    <DashboardIoT />
+    <TagsForTags />
   </> 
   
 }
