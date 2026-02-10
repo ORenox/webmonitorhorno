@@ -5,10 +5,10 @@
   const API_BASE = "https://a49sbz67r1.execute-api.us-east-1.amazonaws.com"; // ← tu API Gateway
 
  const tagsConfig = [
-  { key: "M..1:36-1", label: "Pistón", sourceKey: "Q..1:10-1" },
-  { key: "M..1:37-1", label: "Motor", sourceKey: "Q..1:8-1" },
-  { key: "M..1:39-1", label: "Gata", sourceKey: "Q..1:12-1" },
-  { key: "M..1:38-1", label: "Resistencias", sourceKey: "Q..1:9-1" },
+  { key: "M..1:36-1", label: "Pistón", sourceKey: "Q..1:10-1", offTag:"M..1:41-1" },
+  { key: "M..1:37-1", label: "Motor", sourceKey: "Q..1:8-1", offTag:"M..1:42-1"},
+  { key: "M..1:39-1", label: "Gata", sourceKey: "Q..1:12-1", offTag:"M..1:41-1"},
+  { key: "M..1:38-1", label: "Resistencias", sourceKey: "Q..1:9-1", offTag:"M..1:42-1" },
 
   { key: "Q..1:8-1", label: "Motor Centrifugadora", readOnly: true, noshowTag: true },
   { key: "Q..1:10-1", label: "Piston centrifugadora", readOnly: true, noshowTag: true },
@@ -23,6 +23,8 @@
 
 const MODE_TAG = "Q..1:5-1";
 const MACHINE_TAG = "Q..1:4-1";
+const VozParo_TAG = "M..1:41-1";
+const VozReinicio_TAG = "M..1:42-1";
 
   export default function TagsForTags() {
     const [shadow, setShadow] = useState({});
@@ -55,6 +57,7 @@ const MACHINE_TAG = "Q..1:4-1";
 
 
     const pulseTag = async (key, duration = 2000) => {
+      if (!key) return;
       // marcar SOLO este tag como activo
       setLoadingTags(prev => ({ ...prev, [key]: true }));
 
@@ -129,8 +132,11 @@ const MACHINE_TAG = "Q..1:4-1";
                     <Button disabled={!isModeEnabled || loadingTags[tag.key]} onClick={() => pulseTag(tag.key)}>
                       {loadingTags[tag.key] ? "Encendiendo..." : "Encender"}
                     </Button>
-                    <Button disabled={!isModeEnabled} onClick={() => updateTag(tag.key, "00")}>
-                      Apagar
+                    <Button
+                      disabled={!isModeEnabled || loadingTags[tag.offTag]}
+                      onClick={() => pulseTag(tag.offTag)}
+                    >
+                      {loadingTags[tag.offTag] ? "Apagando..." : "Apagar"}
                     </Button>
                   </div>
                 )}
