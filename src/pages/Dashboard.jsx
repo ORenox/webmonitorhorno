@@ -10,10 +10,10 @@ const tagsConfig = [
   { key: "Q..1:9-1", label: "Resistencias vulcanizadora", readOnly: true },
   { key: "Q..1:12-1", label: "motor Vulcanizadora", readOnly: true },
 
-  { key: "AI..4:1-1", label: "Presión", type: "analog", offset: -200, gain: 1.25 ,  unit:"PSI" },   
-  { key: "AI..4:3-1", label: "Temperatura", type: "analog", offset: 0, gain: 0.1 , unit: "°C" },
-  { key: "AM..4:2-1", label: "Tiempo Horno centrífugo", type: "analog", offset: 60,gain:1, unit: "s" },
-  { key: "AM..4:1-1", label: "Tiempo Vulcanización", type: "analog", offset: 60,gain:1, unit: "s" },
+  { key: "AI..4:3-1", label: "Presión", type: "analog", offset: -250, gain: 1.25 ,  unit:"PSI" },   
+  { key: "AI..4:1-1", label: "Temperatura", type: "analog", offset: -50, gain: 0.25 , unit: "°C" },
+  { key: "AM..4:2-1", label: "Tiempo Horno centrífugo", type: "analog", offset:0,gain:1, unit: "s" },
+  { key: "AM..4:1-1", label: "Tiempo Vulcanización", type: "analog", offset: 0,gain:1, unit: "s" },
 
   { key: "I..1:10-1", label: "Emergencia", readOnly: true },
 ];
@@ -109,7 +109,7 @@ function Dashboard() {
 
             if (tag.type === "analog" && rawValue) {
               const decimal = parseInt(rawValue, 16);
-              const scaled = (decimal+tag.offset) * (tag.gain);
+              const scaled = decimal*tag.gain + tag.offset;
               displayValue = scaled.toFixed(1);
             }
 
