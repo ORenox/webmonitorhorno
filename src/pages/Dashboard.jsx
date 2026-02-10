@@ -2,6 +2,7 @@ import DashboardIoT from "../components/TagsForTags";
 import Example from "../components/Example";
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
+import DecimalToHexCard from "../components/DecimalToHexCard";
 const API_BASE = "https://a49sbz67r1.execute-api.us-east-1.amazonaws.com";
 
 const tagsConfig = [
@@ -98,6 +99,9 @@ function Dashboard() {
             <span className="text-zinc-800 font-bold">{machineText}</span>
           </div>
         </div>
+      </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <DecimalToHexCard />
       </div>
       {/* ===== TARJETAS DE TAGS ===== */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
