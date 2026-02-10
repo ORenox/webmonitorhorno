@@ -8,7 +8,7 @@ const menuItems = [
 
 function Sidebar() {
   return (
-    <aside className="w-64 h-full bg-gray-900 text-gray-100 flex flex-col">
+    <aside className="w-65 h-full bg-gray-600 text-gray-100 flex flex-col">
       
       {/* Título */}
       <div className="px-6 py-4 text-xl font-bold border-b border-gray-700">

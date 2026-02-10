@@ -16,11 +16,17 @@
   { key: "Q..1:12-1", label: "motor Vulcanizadora", readOnly: true, noshowTag: true },
 
   { key: "I..1:10-1", label: "Emergencia", readOnly: true }
+
+
 ];
+
+
+const MODE_TAG = "Q..1:5-1";
+const MACHINE_TAG = "Q..1:4-1";
 
   export default function TagsForTags() {
     const [shadow, setShadow] = useState({});
-    const [loading, setLoading] = useState(false);
+    const [loadingTags, setLoadingTags] = useState({});
 
     const fetchShadow = async () => {
       try {
@@ -47,15 +53,59 @@
       setLoading(false);
     };
 
+
+    const pulseTag = async (key, duration = 2000) => {
+      // marcar SOLO este tag como activo
+      setLoadingTags(prev => ({ ...prev, [key]: true }));
+
+      try {
+        // Encender
+        await fetch(`${API_BASE}/shadow`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ attribute: key, value: "01" })
+        });
+
+        // Apagar luego de 2s
+        setTimeout(async () => {
+          await fetch(`${API_BASE}/shadow`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ attribute: key, value: "00" })
+          });
+
+          setLoadingTags(prev => ({ ...prev, [key]: false }));
+          fetchShadow();
+        }, duration);
+
+      } catch (err) {
+        console.error("Error en pulso", err);
+        setLoadingTags(prev => ({ ...prev, [key]: false }));
+      }
+    };
+
+
     useEffect(() => {
       fetchShadow();
       const interval = setInterval(fetchShadow, 4000);
       return () => clearInterval(interval);
     }, []);
 
+    const isModeEnabled = shadow[MODE_TAG] === "01";
+
   
   return (
-    <div className="min-h-screen bg-slate-100 p-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+    <> 
+    {!isModeEnabled && (
+        <p className="text-sm text-red-500">
+          Modo Manual Deshabilitado
+        </p>
+      )}
+
+      <div className="min-h-screen bg-slate-100 p-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      
+      
       {tagsConfig
         .filter(tag => !tag.noshowTag)
         .map(tag => {
@@ -69,17 +119,17 @@
                 <h2 className="text-xl font-semibold">{tag.label}</h2>
                 <p className="text-lg">
                   Estado:{" "}
-                  <span className={isOn ? "text-green-600" : "text-red-600"}>
+                  <span className={isOn ? "text-green-600" : "text-grey-600"}>
                     {isOn ? "ENCENDIDO" : "APAGADO"}
                   </span>
                 </p>
 
                 {!tag.readOnly && (
                   <div className="flex gap-2">
-                    <Button disabled={loading} onClick={() => updateTag(tag.key, "01")}>
-                      Encender
+                    <Button disabled={!isModeEnabled || loadingTags[tag.key]} onClick={() => pulseTag(tag.key)}>
+                      {loadingTags[tag.key] ? "Encendiendo..." : "Encender"}
                     </Button>
-                    <Button disabled={loading} onClick={() => updateTag(tag.key, "00")}>
+                    <Button disabled={!isModeEnabled} onClick={() => updateTag(tag.key, "00")}>
                       Apagar
                     </Button>
                   </div>
@@ -89,6 +139,8 @@
           );
         })}
     </div>
+       </>
+    
   );
 
   }
