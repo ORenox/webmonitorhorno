@@ -179,8 +179,8 @@ function ConfiguracionPLC() {
 
       const val = Number(tiempoCentrifugado);
 
-      if (isNaN(val) || val < 0 || val > 999) {
-        setError("El tiempo de centrifugado debe estar entre 0 y 999 minutos");
+      if (isNaN(val) || val < 0 || val > 99) {
+        setError("El tiempo de centrifugado debe estar entre 0 y 99 segundos");
         return;
       }
 

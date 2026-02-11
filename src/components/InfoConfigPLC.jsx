@@ -73,7 +73,7 @@ function InfoConfigPLC({ shadow }){
             Tiempo de centrifugación
             </h3>
             <div className="bg-slate-100 p-3 rounded-xl w-fit">
-            {getDecimalValue(tiempoCentrifugadoTag)/100} s
+            {getDecimalValue(tiempoCentrifugadoTag)} s
             </div>
         </div>
         </div>
