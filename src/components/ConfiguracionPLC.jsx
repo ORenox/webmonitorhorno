@@ -42,7 +42,8 @@ function ConfiguracionPLC() {
   const [loading, setLoading] = useState(false); 
   const [tiempos, setTiempos] = useState(Array(6).fill("")); 
   const [presiones, setPresiones] = useState(Array(6).fill("")); 
-  const [error, setError] = useState("");
+  const [error1, setError1] = useState("");
+  const [error2, setError2] = useState("");
   const [tiempoCentrifugado, setTiempoCentrifugado] = useState("");
   const handleTiempoChange = (i, value) => 
     { const nuevos = [...tiempos];
@@ -59,7 +60,7 @@ function ConfiguracionPLC() {
 
 
   const enviarConfiguracion = async () => {
-    setError(""); 
+    setError1(""); 
 
     const tiemposNum = [];
     const presionesNum = [];
@@ -76,7 +77,7 @@ function ConfiguracionPLC() {
       const val = Number(tiempos[i]);
 
       if (isNaN(val) || val < 0 || val > 99) {
-        setError(`El Tiempo ${i + 1} debe estar entre 0 y 99 minutos`);
+        setError1(`El Tiempo ${i + 1} debe estar entre 0 y 99 minutos`);
         return;
       }
 
@@ -93,7 +94,7 @@ function ConfiguracionPLC() {
       const val = Number(presiones[i]);
 
       if (isNaN(val) || val < 0 || val > 3000) {
-        setError(`La Presión ${i + 1} debe estar entre 0 y 3000 PSI`);
+        setError1(`La Presión ${i + 1} debe estar entre 0 y 3000 PSI`);
         return;
       }
 
@@ -105,7 +106,7 @@ function ConfiguracionPLC() {
 
     for (let i = 1; i < presionesFiltradas.length; i++) {
       if (presionesFiltradas[i] <= presionesFiltradas[i - 1]) {
-        setError("Las presiones deben ser estrictamente crecientes");
+        setError1("Las presiones deben ser estrictamente crecientes");
         return;
       }
     }
@@ -170,17 +171,17 @@ function ConfiguracionPLC() {
   };
 
   const enviarCentrifugado = async () => {
-      setError("");
+      setError2("");
 
       if (tiempoCentrifugado === "") {
-        setError("Debe ingresar el tiempo de centrifugado");
+        setError2("Debe ingresar el tiempo de centrifugado");
         return;
       }
 
       const val = Number(tiempoCentrifugado);
 
       if (isNaN(val) || val < 0 || val > 99) {
-        setError("El tiempo de centrifugado debe estar entre 0 y 99 segundos");
+        setError2("El tiempo de centrifugado debe estar entre 0 y 99 segundos");
         return;
       }
 
@@ -250,6 +251,11 @@ function ConfiguracionPLC() {
         {
         loading ? "Enviando configuración..." : "Establecer configuración"}
       </button>
+      {error1 && (
+        <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg">
+          {error1}
+        </div>
+      )}
 
       {/* ---------------- CENTRIFUGADORA ---------------- */}
 
@@ -284,9 +290,9 @@ function ConfiguracionPLC() {
 
 
 
-      {error && (
+      {error2 && (
         <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg">
-          {error}
+          {error2}
         </div>
       )}
     </div>
