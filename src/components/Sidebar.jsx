@@ -2,41 +2,55 @@ import { NavLink } from "react-router-dom";
 
 const menuItems = [
   { name: "Información general", path: "/" },
-  { name: "Estado de los tags", path: "/tags" },
-  { name: "Historial de datos", path: "/datos" },
+  { name: "Configuración", path: "/configuracion" },
+  { name: "Historial", path: "/datos" },
 ];
 
-function Sidebar() {
+function Sidebar({ open }) {
   return (
-    <aside className="w-65 h-full bg-gray-600 text-gray-100 flex flex-col">
-      
+    <aside
+      className={`
+        bg-gray-700 text-gray-100
+        transition-all duration-300
+        ${open ? "w-64" : "w-20"}
+        flex flex-col
+      `}
+    >
       {/* Título */}
-      <div className="px-6 py-4 text-xl font-bold border-b border-gray-700">
-        Monitor web
+      <div className="h-14 flex items-center justify-center border-b border-gray-600 font-bold text-lg">
+        {open ? "Monitor Web" : "MW"}
       </div>
 
       {/* Menú */}
-      <nav className="flex-1 px-4 py-6 space-y-2">
+      <nav className="flex-1 py-4 space-y-2">
         {menuItems.map((item) => (
           <NavLink
             key={item.name}
             to={item.path}
             className={({ isActive }) =>
-              `block px-4 py-2 rounded-lg transition 
-               ${isActive 
-                 ? "bg-cyan-600 text-white" 
-                 : "text-gray-300 hover:bg-gray-800"}`
+              `
+              flex items-center
+              ${open ? "justify-start px-4" : "justify-center"}
+              py-2 mx-2 rounded-lg transition
+              ${
+                isActive
+                  ? "bg-cyan-600 text-white"
+                  : "text-gray-300 hover:bg-gray-600"
+              }
+              `
             }
           >
-            {item.name}
+            {open ? item.name : "•"}
           </NavLink>
         ))}
       </nav>
 
       {/* Footer */}
-      <div className="px-6 py-4 text-sm text-gray-400 border-t border-gray-700">
-        Horno y Vulcanizadora Industrial v1.0
-      </div>
+      {open && (
+        <div className="px-4 py-3 text-xs text-gray-400 border-t border-gray-600">
+          Horno y Vulcanizadora v1.0
+        </div>
+      )}
     </aside>
   );
 }

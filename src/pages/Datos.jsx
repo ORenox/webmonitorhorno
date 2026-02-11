@@ -1,6 +1,7 @@
 import { supabase } from "../services/supabaseClient";
 import { useEffect, useState } from "react";
 import Example from "../components/Example";
+import ConfiguracionPLC from "../components/ConfiguracionPLC";
 
 function Datos(){
     const [history, setHistory] = useState([]);

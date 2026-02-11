@@ -2,22 +2,15 @@ import Sidebar from "../components/Sidebar";
 import { useState } from "react";
 
 function MainLayout({ children }) {
-    const [open, setOpen] = useState(false);
-  return (
-     <div className="flex min-h-screen">
-      
-      {/* Sidebar */}
-      <div
-        className={`transition-all duration-300 
-        ${open ? "w-64" : "w-0"} overflow-hidden`}
-      >
-        <Sidebar />
-      </div>
+  const [open, setOpen] = useState(true);
 
-      {/* Main content */}
-      <div className="flex-1 bg-slate-100">
-        
-        {/* Top bar */}
+  return (
+    <div className="flex min-h-screen bg-slate-100">
+
+      <Sidebar open={open} />
+
+      <div className="flex-1 flex flex-col">
+
         <header className="h-14 bg-white shadow flex items-center px-4">
           <button
             onClick={() => setOpen(!open)}
@@ -25,11 +18,16 @@ function MainLayout({ children }) {
           >
             ☰
           </button>
+
+          <h1 className="ml-4 font-semibold">
+            Panel de Control
+          </h1>
         </header>
 
-        <main className="p-6">
+        <main className="flex-1 p-6">
           {children}
         </main>
+
       </div>
     </div>
   );
