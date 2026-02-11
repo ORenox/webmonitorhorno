@@ -1,5 +1,4 @@
 import DashboardIoT from "../components/ConfiguracionPLC";
-import Example from "../components/Example";
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import DecimalToHexCard from "../components/DecimalToHexCard";

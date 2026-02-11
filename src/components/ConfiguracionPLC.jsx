@@ -29,6 +29,8 @@ const presionesOffTags = [
   "V..4:42-1",
 ];
 
+const tiempoCentrifugadoTag = "V..4:44-1";
+
 function toHex(value) {
   return Math.max(value, 0)
     .toString(16)
@@ -41,6 +43,7 @@ function ConfiguracionPLC() {
   const [tiempos, setTiempos] = useState(Array(6).fill("")); 
   const [presiones, setPresiones] = useState(Array(6).fill("")); 
   const [error, setError] = useState("");
+  const [tiempoCentrifugado, setTiempoCentrifugado] = useState("");
   const handleTiempoChange = (i, value) => 
     { const nuevos = [...tiempos];
       nuevos[i] = value;
@@ -166,6 +169,43 @@ function ConfiguracionPLC() {
     
   };
 
+  const enviarCentrifugado = async () => {
+      setError("");
+
+      if (tiempoCentrifugado === "") {
+        setError("Debe ingresar el tiempo de centrifugado");
+        return;
+      }
+
+      const val = Number(tiempoCentrifugado);
+
+      if (isNaN(val) || val < 0 || val > 999) {
+        setError("El tiempo de centrifugado debe estar entre 0 y 999 minutos");
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        await fetch(`${API_BASE}/shadow`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            attribute: tiempoCentrifugadoTag,
+            value: toHex(val),
+          }),
+        });
+
+        setTiempoCentrifugado("");
+        setLoading(false);
+
+      } catch (err) {
+        console.error("Error enviando centrifugado", err);
+        setLoading(false);
+      }
+    };
+
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col gap-6 w-full h-full">
       <h2 className="text-2xl font-bold">Configuración de máquina vulcanizadora</h2>
@@ -210,6 +250,39 @@ function ConfiguracionPLC() {
         {
         loading ? "Enviando configuración..." : "Establecer configuración"}
       </button>
+
+      {/* ---------------- CENTRIFUGADORA ---------------- */}
+
+        <div className="border-t pt-6 flex flex-col gap-4">
+          <h2 className="text-2xl font-bold">
+            Configuración de máquina centrifugadora
+          </h2>
+
+          <div className="flex gap-4 items-center">
+            <input
+              type="number"
+              min="0"
+              max="99"
+              placeholder="Tiempo centrifugado (s)"
+              value={tiempoCentrifugado}
+              onChange={e => setTiempoCentrifugado(e.target.value)}
+              className="border rounded-lg px-3 py-2 w-full"
+            />
+            <span className="text-gray-600">s</span>
+          </div>
+
+          <button
+            onClick={enviarCentrifugado}
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? "Enviando..." : "Establecer tiempo centrifugado"}
+          </button>
+        </div>
+
+
+
+
 
       {error && (
         <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg">
