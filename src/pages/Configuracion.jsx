@@ -1,5 +1,4 @@
 import ConfiguracionPLC from "../components/ConfiguracionPLC";
-import ConfiguracionPLC from "../components/ConfiguracionPLC";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from 'react-router-dom';
