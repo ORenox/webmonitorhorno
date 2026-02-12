@@ -246,7 +246,7 @@ function ConfiguracionPLC() {
       <button
         onClick={enviarConfiguracion}
         disabled={loading}
-        className=" bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 disabled:opacity-50"
+        className=" bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-400 disabled:opacity-50"
       >
         {
         loading ? "Enviando configuración..." : "Establecer configuración"}
@@ -280,7 +280,7 @@ function ConfiguracionPLC() {
           <button
             onClick={enviarCentrifugado}
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 disabled:opacity-50"
+            className="w-full bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-400 disabled:opacity-50"
           >
             {loading ? "Enviando..." : "Establecer tiempo centrifugado"}
           </button>

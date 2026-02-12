@@ -1,4 +1,4 @@
-import DashboardIoT from "../components/ConfiguracionPLC";
+
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import DecimalToHexCard from "../components/DecimalToHexCard";
@@ -7,7 +7,10 @@ import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 import InfoConfigPLC from "../components/InfoConfigPLC" ;
 import { saveTag } from "../services/tagService";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from 'react-router-dom';
 const API_BASE = "https://a49sbz67r1.execute-api.us-east-1.amazonaws.com";
+
 
 
 const tagsConfig = [
@@ -37,11 +40,21 @@ const MODE_TAG = "Q..1:5-1";
 const MACHINE_TAG = "Q..1:4-1";
 
 function Dashboard() {
+    
+
 
     const [shadow, setShadow] = useState({});
     const [loading, setLoading] = useState(false);
     const [history, setHistory] = useState([]);
     const [loadingTags, setLoadingTags] = useState({});
+
+    const { user, logout } = useAuth();  // Solo UNA declaración de useAuth
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+      logout();
+      navigate('/');
+    };
 
 
     //===============funcion para guardar estados en base de datos=============
@@ -167,7 +180,7 @@ function Dashboard() {
 
   if (tag.type === "analog" && rawValue) {
     const decimal = parseInt(rawValue, 16);
-    const scaled = (decimal * tag.gain + tag.offset) * tag.extra;
+    const scaled = (decimal * tag.gain + tag.offset) * (tag.extra || 1);
     displayValue = scaled.toFixed(1);
   }
 
@@ -189,7 +202,7 @@ function Dashboard() {
               </span>
             </p>
 
-            {!tag.readOnly && (
+            {!tag.readOnly &&  user &&(
               <div className="flex gap-2">
                 {isModeEnabled && (
                   <>
@@ -219,58 +232,82 @@ function Dashboard() {
 
 
   return <>
-    <div className="min-h-screen bg-slate-100 p-6 flex flex-col gap-8">
+    <div className="min-h-screen bg-slate-100">
+      {/* === SECCIÓN FIJA - SIEMPRE VISIBLE === */}
+      <div className="sticky top-0 z-50 bg-slate-100 px-6 pt-6 pb-4 shadow-md">
         <h1 className="text-3xl font-bold text-center">
-        Panel de Información Horno y Vulcanizadora
-      </h1>
+          Panel de Información Horno y Vulcanizadora
+        </h1>
 
-      {/* ===== ESTADOS GENERALES ===== */}
-      <div className="bg-white rounded-2xl shadow-lg">
-        <div className="p-6 flex flex-col gap-4">
-          <div>
-            <span className="font-semibold">Modo:</span>{" "}
-            <span className="text-zinc-800 font-bold">{modeText}</span>
-          </div>
+        {/* Información de usuario logueado */}
+        <div className="flex justify-between items-center mt-4 mb-2">
+          <h1 className="text-2xl font-bold"></h1>
+          {user && (
+            <div className="flex items-center gap-4">
+              <span className="text-gray-600">
+                Bienvenido, {user.username}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded-md text-sm transition-colors"
+              >
+                Cerrar Sesión
+              </button>
+            </div>
+          )}
+        </div>
 
-          <div>
-            <span className="font-semibold">Máquina activa:</span>{" "}
-            <span className="text-zinc-800 font-bold">{machineText}</span>
+        {/* ESTADOS GENERALES - También fijos */}
+        <div className="bg-white rounded-2xl shadow-lg">
+          <div className="p-6 flex flex-col gap-4">
+            <div>
+              <span className="font-semibold">Modo:</span>{" "}
+              <span className="text-zinc-800 font-bold">{modeText}</span>
+            </div>
+            <div>
+              <span className="font-semibold">Máquina activa:</span>{" "}
+              <span className="text-zinc-800 font-bold">{machineText}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Informacion de la configuracion actual*/}
-      <InfoConfigPLC shadow={shadow} />
-      {/* ===== TARJETAS DE TAGS ===== */}
-      <h2 className="text-2xl font-bold mt-6">Vulcanizadora</h2>
+      <div className="relative z-10 px-6 pb-6 space-y-6">
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {tagsConfig
-          .filter(tag => !tag.noshowTag && tag.machine === "V")
-          .map(tag => renderTagCard(tag))}
+        {/* Informacion de la configuracion actual*/}
+        <InfoConfigPLC shadow={shadow} />
+        {/* ===== TARJETAS DE TAGS ===== */}
+        <h2 className="text-2xl font-bold mt-6">Vulcanizadora</h2>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {tagsConfig
+            .filter(tag => !tag.noshowTag && tag.machine === "V")
+            .map(tag => renderTagCard(tag))}
+        </div>
+
+        {/* ===== CENTRIFUGADORA ===== */}
+        <h2 className="text-2xl font-bold mt-10">Centrifugadora</h2>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {tagsConfig
+            .filter(tag => !tag.noshowTag && tag.machine === "C")
+            .map(tag => renderTagCard(tag))}
+        </div>
+
+        {/* ===== General ===== */}
+        <h2 className="text-2xl font-bold mt-10">General</h2>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {tagsConfig
+            .filter(tag => !tag.noshowTag && tag.machine === "G")
+            .map(tag => renderTagCard(tag))}
+        </div>
+        <Button onClick={handleSaveProcess}>
+          Guardar proceso
+        </Button>
+        
       </div>
 
-      {/* ===== CENTRIFUGADORA ===== */}
-      <h2 className="text-2xl font-bold mt-10">Centrifugadora</h2>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {tagsConfig
-          .filter(tag => !tag.noshowTag && tag.machine === "C")
-          .map(tag => renderTagCard(tag))}
-      </div>
-
-      {/* ===== General ===== */}
-      <h2 className="text-2xl font-bold mt-10">General</h2>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {tagsConfig
-          .filter(tag => !tag.noshowTag && tag.machine === "G")
-          .map(tag => renderTagCard(tag))}
-      </div>
-      <Button onClick={handleSaveProcess}>
-        Guardar proceso
-      </Button>
-      
     </div>
   </>
   

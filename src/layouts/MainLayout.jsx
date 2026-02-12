@@ -5,29 +5,31 @@ function MainLayout({ children }) {
   const [open, setOpen] = useState(true);
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex h-screen overflow-hidden bg-slate-100">
+      {/* Sidebar - Siempre fijo */}
+      <div className="h-screen overflow-hidden">
+        <Sidebar open={open} />
+      </div>
 
-      <Sidebar open={open} />
-
-      <div className="flex-1 flex flex-col">
-
-        <header className="h-14 bg-white shadow flex items-center px-4">
+      {/* Contenido principal - Scrolleable */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Header - Fijo */}
+        <header className="h-14 bg-white shadow flex items-center px-4 flex-shrink-0">
           <button
             onClick={() => setOpen(!open)}
             className="p-2 rounded-md hover:bg-gray-200"
           >
             ☰
           </button>
-
           <h1 className="ml-4 font-semibold">
             Panel de Control
           </h1>
         </header>
 
-        <main className="flex-1 p-6">
+        {/* Main - Scrolleable */}
+        <main className="flex-1 overflow-y-auto p-0">
           {children}
         </main>
-
       </div>
     </div>
   );

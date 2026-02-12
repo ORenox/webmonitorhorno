@@ -41,8 +41,8 @@ function InfoConfigPLC({ shadow }){
             <div className="grid md:grid-cols-6 gap-3">
             {tiemposTags.map((tag, index) => (
                 <div key={tag} className="bg-slate-100 p-3 rounded-xl">
-                <span className="font-semibold">
-                    Etapa {index + 1}:
+                <span>
+                    T{index + 1}:
                 </span>{" "}
                 {getDecimalValue(tag)} min
                 </div>
@@ -58,8 +58,8 @@ function InfoConfigPLC({ shadow }){
             <div className="grid md:grid-cols-6 gap-3">
             {presionesOnTags.map((tag, index) => (
                 <div key={tag} className="bg-slate-100 p-3 rounded-xl">
-                <span className="font-semibold">
-                    Presión {index + 1}:
+                <span >
+                    P{index + 1}:
                 </span>{" "}
                 {getDecimalValue(tag)} PSI
                 </div>
