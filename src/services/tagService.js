@@ -1,18 +1,14 @@
 import { supabase } from "./supabaseClient";
 
-export async function saveTag(tagName, value, status) {
+export async function saveTag(processData) {
+
   const { data, error } = await supabase
-    .from("tags")
-    .insert([
-      {
-        tag_name: tagName,
-        value: value,
-        status: status,
-      },
-    ]);
+    .from("process_history")
+    .insert([processData]);
 
   if (error) {
-    console.error("Error guardando tag:", error);
+    console.error("Error guardando en process_history:", error);
+    return null;
   }
 
   return data;

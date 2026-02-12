@@ -6,6 +6,7 @@ import DecimalToHexCard from "../components/DecimalToHexCard";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 import InfoConfigPLC from "../components/InfoConfigPLC" ;
+import { saveTag } from "../services/tagService";
 const API_BASE = "https://a49sbz67r1.execute-api.us-east-1.amazonaws.com";
 
 
@@ -36,10 +37,50 @@ const MODE_TAG = "Q..1:5-1";
 const MACHINE_TAG = "Q..1:4-1";
 
 function Dashboard() {
+
     const [shadow, setShadow] = useState({});
     const [loading, setLoading] = useState(false);
     const [history, setHistory] = useState([]);
     const [loadingTags, setLoadingTags] = useState({});
+
+
+    //===============funcion para guardar estados en base de datos=============
+    const handleSaveProcess = async () => {
+      // Obtener valores analógicos reales
+      const pressureRaw = shadow["AI..4:3-1"];
+      const tempRaw = shadow["AI..4:1-1"];
+      const tiempoVRaw = shadow["AM..4:1-1"];
+      const tiempoCRaw = shadow["AM..4:2-1"];
+
+      const pressure = pressureRaw
+        ? (parseInt(pressureRaw, 16) * 3).toFixed(1)
+        : null;
+
+      const temperature = tempRaw
+        ? (parseInt(tempRaw, 16) * 0.25 - 50).toFixed(1)
+        : null;
+
+      const tiempo_vulcanizacion = tiempoVRaw
+        ? parseInt(tiempoVRaw, 16)
+        : null;
+
+      const tiempo_centrifuga = tiempoCRaw
+        ? parseInt(tiempoCRaw, 16)
+        : null;
+
+      const data = {
+        mode: modeText,
+        machine: machineText,
+        pressure,
+        temperature,
+        tiempo_vulcanizacion,
+        tiempo_centrifuga,
+      };
+
+
+       console.log("Guardando proceso...");
+      await saveTag(data);
+    };
 
 
     // ================= SHADOW =================
@@ -219,13 +260,16 @@ function Dashboard() {
       </div>
 
       {/* ===== General ===== */}
-      <h2 className="text-2xl font-bold mt-10">Centrifugadora</h2>
+      <h2 className="text-2xl font-bold mt-10">General</h2>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {tagsConfig
           .filter(tag => !tag.noshowTag && tag.machine === "G")
           .map(tag => renderTagCard(tag))}
       </div>
+      <Button onClick={handleSaveProcess}>
+        Guardar proceso
+      </Button>
       
     </div>
   </>

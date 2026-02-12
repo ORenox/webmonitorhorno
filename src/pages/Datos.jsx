@@ -1,6 +1,5 @@
 import { supabase } from "../services/supabaseClient";
 import { useEffect, useState } from "react";
-import Example from "../components/Example";
 
 function Datos(){
     const [history, setHistory] = useState([]);
@@ -8,7 +7,7 @@ function Datos(){
     // ================= SUPABASE =================
       const fetchHistory = async () => {
         const { data, error } = await supabase
-          .from("tags")      // 👈 nombre de tu tabla
+          .from("process_history")      // 👈 nombre de tu tabla
           .select("*")
           .order("created_at", { ascending: false })
           .limit(20);
@@ -40,18 +39,25 @@ function Datos(){
             <table className="w-full text-sm border">
               <thead className="bg-slate-200">
                 <tr>
-                  <th className="p-2 border">Tag</th>
-                  <th className="p-2 border">Valor</th>
-                  <th className="p-2 border">Estado</th>
+                  <th className="p-2 border">Modo</th>
+                  <th className="p-2 border">Máquina</th>
+                  <th className="p-2 border">Presión (PSI)</th>
+                  <th className="p-2 border">Temperatura (°C)</th>
+                  <th className="p-2 border">Tiempo Vulcanización (s)</th>
+                  <th className="p-2 border">Tiempo Centrífuga (s)</th>
                   <th className="p-2 border">Fecha</th>
                 </tr>
               </thead>
+
               <tbody>
                 {history.map((row) => (
                   <tr key={row.id} className="text-center">
-                    <td className="border p-2">{row.tag}</td>
-                    <td className="border p-2">{row.value}</td>
-                    <td className="border p-2">{row.status}</td>
+                    <td className="border p-2">{row.mode}</td>
+                    <td className="border p-2">{row.machine}</td>
+                    <td className="border p-2">{row.pressure}</td>
+                    <td className="border p-2">{row.temperature}</td>
+                    <td className="border p-2">{row.tiempo_vulcanizacion}</td>
+                    <td className="border p-2">{row.tiempo_centrifuga}</td>
                     <td className="border p-2">
                       {new Date(row.created_at).toLocaleString()}
                     </td>
@@ -59,12 +65,12 @@ function Datos(){
                 ))}
               </tbody>
             </table>
+
           </div>
 
         </div>
       </div>
 
-      <Example/>
     
     
     </>
