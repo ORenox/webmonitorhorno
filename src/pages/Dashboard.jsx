@@ -18,7 +18,7 @@ const tagsConfig = [
   { key: "Q..1:10-1", label: "Piston centrifugadora", readOnly: true, noshowTag: true },
   { key: "Q..1:9-1", label: "Resistencias vulcanizadora", readOnly: true, noshowTag: true },
   { key: "Q..1:12-1", label: "motor Vulcanizadora", readOnly: true, noshowTag: true },
-  { key: "AI..4:3-1", label: "Presión", type: "analog", offset: -200, gain: 1, unit: "PSI", extra: 4.5, machine: "V" },
+  { key: "AI..4:3-1", label: "Presión", type: "analog", offset: -200, gain: 1, unit: "PSI", extra: 3.75, machine: "V" },
   { key: "AI..4:1-1", label: "Temperatura", type: "analog", offset: -50, gain: 0.25, unit: "°C", extra: 1, machine: "V" },
   { key: "AM..4:2-1", label: "Tiempo Horno centrífugo", type: "analog", offset: 0, gain: 1, unit: "s", extra: 1, machine: "C" },
   { key: "AM..4:1-1", label: "Tiempo Vulcanización", type: "analog", offset: 0, gain: 1, unit: "s", extra: 1, machine: "V" },
