@@ -338,7 +338,7 @@ function ConfiguracionPLC() {
                 placeholder={`T${i + 1}`}
                 value={tiempos[i]}
                 onChange={e => handleTiempoChange(i, e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               />
               <span className="text-sm text-gray-500 sm:text-gray-600">min</span>
 
@@ -350,7 +350,7 @@ function ConfiguracionPLC() {
                 placeholder={`P${i + 1}`}
                 onChange={e => handlePresionChange(i, e.target.value)}
                 value={presiones[i]}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               />
               <span className="text-sm text-gray-500 sm:text-gray-600">PSI</span>
             </div>
@@ -362,9 +362,9 @@ function ConfiguracionPLC() {
           <button
             onClick={enviarConfiguracion}
             disabled={loadingConfig}
-            className="w-full bg-gray-800 text-white py-3 rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors font-medium text-sm sm:text-base"
+            className="w-full bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors font-medium text-sm sm:text-base"
           >
-            {loadingConfig ? "Enviando..." : "Guardar configuración (tiempos y presiones)"}
+            {loadingConfig ? "Enviando..." : "Guardar configuración"}
           </button>
           
           {errorConfig && (
@@ -395,14 +395,14 @@ function ConfiguracionPLC() {
               placeholder="Temperatura (°C)"
               value={tempVulcanizado}
               onChange={e => setTempVulcanizado(e.target.value)}
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
             />
           </div>
 
           <button
             onClick={enviarTemperaturaVulcanizado}
             disabled={loadingTempVulc}
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors font-medium text-sm sm:text-base"
+            className="w-full bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors font-medium text-sm sm:text-base"
           >
             {loadingTempVulc ? "Enviando..." : "Guardar temperatura"}
           </button>
@@ -429,6 +429,9 @@ function ConfiguracionPLC() {
         <h2 className="text-xl sm:text-2xl font-bold text-gray-800 pb-2 border-b border-gray-200">
           Configuración Centrifugadora
         </h2>
+        <h2 className="text-lg font-semibold text-gray-700">
+          Tiempo de centrifugado
+        </h2>
 
         <div className="flex flex-col sm:flex-row gap-3 items-start">
           <div className="flex-1 w-full">
@@ -439,7 +442,7 @@ function ConfiguracionPLC() {
               placeholder="Tiempo centrifugado (segundos)"
               value={tiempoCentrifugado}
               onChange={e => setTiempoCentrifugado(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
             />
           </div>
           <span className="text-sm text-gray-500 sm:mt-2">segundos</span>
@@ -448,7 +451,7 @@ function ConfiguracionPLC() {
         <button
           onClick={enviarCentrifugado}
           disabled={loadingCentrifugado}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium text-sm sm:text-base"
+          className="w-full bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 disabled:opacity-50 transition-colors font-medium text-sm sm:text-base"
         >
           {loadingCentrifugado ? "Enviando..." : "Guardar tiempo centrifugado"}
         </button>
