@@ -6,6 +6,18 @@ import InfoConfigPLC from "../components/InfoConfigPLC";
 import { saveTag } from "../services/tagService";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from 'react-router-dom';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  AreaChart,
+  Area
+} from 'recharts';
 
 const API_BASE = "https://a49sbz67r1.execute-api.us-east-1.amazonaws.com";
 
@@ -33,6 +45,8 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
   const [loadingTags, setLoadingTags] = useState({});
+  const [chartData, setChartData] = useState([]);
+  const [timeRange, setTimeRange] = useState('1h'); // '1h', '6h', '24h', '7d'
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -42,14 +56,20 @@ function Dashboard() {
     navigate('/');
   };
 
+  const processAnalogValue = (rawValue, tag) => {
+    if (!rawValue) return null;
+    const decimal = parseInt(rawValue, 16);
+    return (decimal * tag.gain + tag.offset) * (tag.extra || 1);
+  };
+
   const handleSaveProcess = async () => {
     const pressureRaw = shadow["AI..4:3-1"];
     const tempRaw = shadow["AI..4:1-1"];
     const tiempoVRaw = shadow["AM..4:1-1"];
     const tiempoCRaw = shadow["AM..4:2-1"];
 
-    const pressure = pressureRaw ? (parseInt(pressureRaw, 16) * 3).toFixed(1) : null;
-    const temperature = tempRaw ? (parseInt(tempRaw, 16) * 0.25 - 50).toFixed(1) : null;
+    const pressure = pressureRaw ? processAnalogValue(pressureRaw, tagsConfig.find(t => t.key === "AI..4:3-1")) : null;
+    const temperature = tempRaw ? processAnalogValue(tempRaw, tagsConfig.find(t => t.key === "AI..4:1-1")) : null;
     const tiempo_vulcanizacion = tiempoVRaw ? parseInt(tiempoVRaw, 16) : null;
     const tiempo_centrifuga = tiempoCRaw ? parseInt(tiempoCRaw, 16) : null;
 
@@ -64,6 +84,27 @@ function Dashboard() {
 
     console.log("Guardando proceso...");
     await saveTag(data);
+    
+    // Actualizar datos de gráficas
+    updateChartData(pressure, temperature);
+  };
+
+  const updateChartData = (pressure, temperature) => {
+    const newPoint = {
+      timestamp: new Date().toLocaleTimeString(),
+      fullTimestamp: new Date(),
+      pressure: pressure || 0,
+      temperature: temperature || 0,
+    };
+
+    setChartData(prevData => {
+      const newData = [...prevData, newPoint];
+      // Mantener solo los últimos 100 puntos para rendimiento
+      if (newData.length > 100) {
+        return newData.slice(-100);
+      }
+      return newData;
+    });
   };
 
   const fetchShadow = async () => {
@@ -71,6 +112,17 @@ function Dashboard() {
       const res = await fetch(`${API_BASE}/shadow`);
       const data = await res.json();
       setShadow(data);
+      
+      // Actualizar gráficas con nuevos valores
+      const pressureTag = tagsConfig.find(t => t.key === "AI..4:3-1");
+      const tempTag = tagsConfig.find(t => t.key === "AI..4:1-1");
+      
+      const pressure = data["AI..4:3-1"] ? processAnalogValue(data["AI..4:3-1"], pressureTag) : null;
+      const temperature = data["AI..4:1-1"] ? processAnalogValue(data["AI..4:1-1"], tempTag) : null;
+      
+      if (pressure !== null || temperature !== null) {
+        updateChartData(pressure, temperature);
+      }
     } catch (err) {
       console.error("Error obteniendo shadow", err);
     }
@@ -108,9 +160,39 @@ function Dashboard() {
       .from("tags")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(50);
 
-    if (!error) setHistory(data);
+    if (!error) {
+      setHistory(data);
+      
+      // Convertir datos históricos para gráficas
+      const historicalData = data.reverse().map(record => ({
+        timestamp: new Date(record.created_at).toLocaleTimeString(),
+        fullTimestamp: new Date(record.created_at),
+        pressure: record.pressure || 0,
+        temperature: record.temperature || 0,
+      }));
+      
+      setChartData(historicalData);
+    }
+  };
+
+  // Filtrar datos según el rango de tiempo seleccionado
+  const getFilteredChartData = () => {
+    if (chartData.length === 0) return [];
+    
+    const now = new Date();
+    const timeLimits = {
+      '1h': 60 * 60 * 1000,
+      '6h': 6 * 60 * 60 * 1000,
+      '24h': 24 * 60 * 60 * 1000,
+      '7d': 7 * 24 * 60 * 60 * 1000,
+    };
+    
+    const limit = timeLimits[timeRange];
+    return chartData.filter(point => 
+      now - point.fullTimestamp < limit
+    );
   };
 
   useEffect(() => {
@@ -133,9 +215,7 @@ function Dashboard() {
     let displayValue = "--";
 
     if (tag.type === "analog" && rawValue) {
-      const decimal = parseInt(rawValue, 16);
-      const scaled = (decimal * tag.gain + tag.offset) * (tag.extra || 1);
-      displayValue = scaled.toFixed(1);
+      displayValue = processAnalogValue(rawValue, tag).toFixed(1);
     }
 
     return (
@@ -189,6 +269,8 @@ function Dashboard() {
       </Card>
     );
   };
+
+  const filteredChartData = getFilteredChartData();
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -245,6 +327,144 @@ function Dashboard() {
       {/* Contenido principal con fondo diferente */}
       <main className="max-w-7xl mx-auto px-4 py-8 bg-gray-50">
         <InfoConfigPLC shadow={shadow} />
+
+        {/* SECCIÓN DE GRÁFICAS - NUEVA */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-800 border-b-2 border-gray-300 pb-2">
+              Monitoreo en Tiempo Real
+            </h2>
+            
+            {/* Selector de rango de tiempo */}
+            <div className="flex gap-2">
+              {['1h', '6h', '24h', '7d'].map(range => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                    timeRange === range
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {range === '1h' ? '1 Hora' : 
+                   range === '6h' ? '6 Horas' : 
+                   range === '24h' ? '24 Horas' : '7 Días'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Gráfica de Temperatura */}
+            <Card className="border border-gray-200 rounded-lg shadow-sm">
+              <CardContent className="p-4">
+                <h3 className="text-md font-semibold text-gray-700 mb-4">
+                  Temperatura (°C) vs Tiempo
+                </h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={filteredChartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="timestamp" 
+                        interval={Math.floor(filteredChartData.length / 5)}
+                      />
+                      <YAxis 
+                        domain={[0, 200]} // Eje fijo de 0 a 200°C
+                        label={{ value: '°C', angle: -90, position: 'insideLeft' }}
+                      />
+                      <Tooltip />
+                      <Legend />
+                      <Area 
+                        type="monotone" 
+                        dataKey="temperature" 
+                        stroke="#ef4444" 
+                        fill="#fee2e2" 
+                        name="Temperatura (°C)"
+                        unit="°C"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                {/* Valores actuales */}
+                {filteredChartData.length > 0 && (
+                  <div className="mt-3 text-sm text-gray-600">
+                    <span className="font-medium">Actual: </span>
+                    <span className="text-red-600 font-bold">
+                      {filteredChartData[filteredChartData.length - 1]?.temperature?.toFixed(1)}°C
+                    </span>
+                    <span className="mx-2">|</span>
+                    <span className="font-medium">Máx: </span>
+                    <span className="text-orange-600">
+                      {Math.max(...filteredChartData.map(d => d.temperature || 0)).toFixed(1)}°C
+                    </span>
+                    <span className="mx-2">|</span>
+                    <span className="font-medium">Mín: </span>
+                    <span className="text-blue-600">
+                      {Math.min(...filteredChartData.map(d => d.temperature || 0)).toFixed(1)}°C
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Gráfica de Presión */}
+            <Card className="border border-gray-200 rounded-lg shadow-sm">
+              <CardContent className="p-4">
+                <h3 className="text-md font-semibold text-gray-700 mb-4">
+                  Presión (PSI) vs Tiempo
+                </h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={filteredChartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="timestamp" 
+                        interval={Math.floor(filteredChartData.length / 5)}
+                      />
+                      <YAxis 
+                        domain={[0, 3000]} // Eje fijo de 0 a 3000 PSI
+                        label={{ value: 'PSI', angle: -90, position: 'insideLeft' }}
+                      />
+                      <Tooltip />
+                      <Legend />
+                      <Area 
+                        type="monotone" 
+                        dataKey="pressure" 
+                        stroke="#3b82f6" 
+                        fill="#dbeafe" 
+                        name="Presión (PSI)"
+                        unit="PSI"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                {/* Valores actuales */}
+                {filteredChartData.length > 0 && (
+                  <div className="mt-3 text-sm text-gray-600">
+                    <span className="font-medium">Actual: </span>
+                    <span className="text-blue-600 font-bold">
+                      {filteredChartData[filteredChartData.length - 1]?.pressure?.toFixed(1)} PSI
+                    </span>
+                    <span className="mx-2">|</span>
+                    <span className="font-medium">Máx: </span>
+                    <span className="text-indigo-600">
+                      {Math.max(...filteredChartData.map(d => d.pressure || 0)).toFixed(1)} PSI
+                    </span>
+                    <span className="mx-2">|</span>
+                    <span className="font-medium">Mín: </span>
+                    <span className="text-cyan-600">
+                      {Math.min(...filteredChartData.map(d => d.pressure || 0)).toFixed(1)} PSI
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </section>
 
         {/* Vulcanizadora */}
         <section className="mb-8">
