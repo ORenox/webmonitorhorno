@@ -19,7 +19,7 @@ function InfoConfigPLC({ shadow }){
     "V..4:30-1",
     ];
     const tiempoCentrifugadoTag = "V..4:44-1";
-     const tempVulcanizadoTag = "V..4:0-1";
+     const tempVulcanizadoTag = "V..4:4-1";
 
     const getDecimalValue = (key) => {
     const raw = shadow?.[key];
@@ -45,7 +45,7 @@ function InfoConfigPLC({ shadow }){
                 <span>
                     T{index + 1}:
                 </span>{" "}
-                {getDecimalValue(tag)} min
+                {Math.ceil(getDecimalValue(tag) / 60)} min
                 </div>
             ))}
             </div>
@@ -83,7 +83,7 @@ function InfoConfigPLC({ shadow }){
             Tiempo de centrifugación
             </h3>
             <div className="bg-slate-100 p-3 rounded-xl w-fit">
-            {getDecimalValue(tiempoCentrifugadoTag)} s
+            {getDecimalValue(tiempoCentrifugadoTag)/100} s
             </div>
         </div>
         </div>

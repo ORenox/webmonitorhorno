@@ -34,6 +34,9 @@
   const tempVulcOnTag = "V..4:0-1";
   const tempVulcOffTag = "V..4:2-1";
 
+  const tempVulcOnTagMas = "V..4:4-1";
+  const tempVulcOffTagMas = "V..4:6-1";
+
   function toHex(value) {
     return Math.max(value, 0)
       .toString(16)
@@ -126,14 +129,15 @@
         if (val !== null) {
           payloads.push({
             attribute: tiemposTags[i],
-            value: toHex(val),
+            value: toHex(val*60),
           });
         }
       });
 
       presionesNum.forEach((val, i) => {
         if (val !== null) {
-          const off = val - 10;
+          const offValue = Math.max(val - 30, 0); // asegurar que no sea negativo
+          
           payloads.push(
             {
               attribute: presionesOnTags[i],
@@ -141,26 +145,42 @@
             },
             {
               attribute: presionesOffTags[i],
-              value: toHex(off < 0 ? 0 : off),
+              value: toHex(offValue),
             }
           );
         }
       });
 
+
       try {
-        await Promise.all(
-          payloads.map(p =>
-            fetch(`${API_BASE}/shadow`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(p),
-            })
-          )
-        );
+        // Enviar de forma secuencial en lugar de Promise.all
+        for (const payload of payloads) {
+          console.log("Enviando:", payload);
+          
+          const response = await fetch(`${API_BASE}/shadow`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Error enviando ${payload.attribute}: ${response.status}`);
+          }
+          
+          // Pequeña pausa entre envíos para evitar saturar la cola
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
         
+        // Opcional: Verificar que los valores se guardaron correctamente
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Limpiar formulario
         setTiempos(Array(6).fill(""));
         setPresiones(Array(6).fill(""));
         setLoadingConfig(false);
+        
+        // Mostrar mensaje de éxito
+        console.log("Configuración enviada correctamente");
         
       } catch (err) {
         console.error("Error enviando configuración", err);
@@ -168,6 +188,11 @@
         setLoadingConfig(false);
       }
     };
+      
+
+
+
+
 
     const enviarCentrifugado = async () => {
       setErrorCentrifugado("");
@@ -192,7 +217,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             attribute: tiempoCentrifugadoTag,
-            value: toHex(val),
+            value: toHex(val*100), // pasarle el valor a segundos
           }),
         });
 
@@ -214,6 +239,24 @@
       }
 
       const val = Number(tempVulcanizado);
+      let val2;
+      let control;
+
+      if (val <= 50) {
+          val2 = val - 1;
+          control = 2;
+      } else if (val > 50 && val <= 100) {
+          val2 = val - 5;
+          control = 4;
+      } else if (val > 100 && val <= 150) {
+          val2 = val - 8;
+          control = 4;
+      } else {
+          val2 = val - 10;
+          control = 4;
+      }
+
+      
 
       if (isNaN(val) || val < 0 || val > 190) {
         setErrorTempVulc("La temperatura de vulcanizado debe estar entre 0 y 190 °C");
@@ -229,19 +272,42 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             attribute: tempVulcOnTag,
-            value: toHex(val),
+            value: toHex(val2 < 0 ? 0 : val2), // Ajusta según necesites
           }),
         });
 
-        
+         
+        // Enviar temperatura OFF
         await fetch(`${API_BASE}/shadow`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             attribute: tempVulcOffTag,
-            value: toHex(val - 20 < 0 ? 0 : val - 20), // Ajusta según necesites
+            value: toHex(val2-control < 0 ? 0 : val2-control), // Ajusta según necesites
           }),
         });
+
+        // Enviar temperatura ON
+        await fetch(`${API_BASE}/shadow`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            attribute: tempVulcOnTagMas,
+            value: toHex(val < 0 ? 0 : val), // Ajusta según necesites
+          }),
+        });
+
+        // Enviar temperatura OFF
+        await fetch(`${API_BASE}/shadow`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            attribute: tempVulcOffTagMas,
+            value: toHex(val - 2 < 0 ? 0 : val - 2), // Ajusta según necesites
+          }),
+        });
+        
+        
 
         setTempVulcanizado("");
         setLoadingTempVulc(false);

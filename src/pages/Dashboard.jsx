@@ -27,7 +27,7 @@ const tagsConfig = [
 
 
 
-  { key: "AI..4:3-1", label: "Presión", type: "analog", offset: 0, gain: 3 ,  unit:"PSI", extra:1, machine: "V"},   
+  { key: "AI..4:3-1", label: "Presión", type: "analog", offset: -200, gain: 1 ,  unit:"PSI", extra:4.5, machine: "V"},   
   { key: "AI..4:1-1", label: "Temperatura", type: "analog", offset: -50, gain: 0.25 , unit: "°C" , extra:1, machine: "V"},
   { key: "AM..4:2-1", label: "Tiempo Horno centrífugo", type: "analog", offset:0,gain:1, unit: "s", extra:1, machine: "C" },
   { key: "AM..4:1-1", label: "Tiempo Vulcanización", type: "analog", offset: 0,gain:1, unit: "s" , extra:1, machine: "V"},
@@ -174,7 +174,7 @@ function Dashboard() {
   //======Render Tags=========
 
   const renderTagCard = (tag) => {
-  const rawValue = shadow[tag.key];
+  const rawValue = shadow[tag.sourceKey || tag.key];
   const isOn = rawValue === "01";
   let displayValue = "--";
 
@@ -210,7 +210,7 @@ function Dashboard() {
                       disabled={loadingTags?.[tag.key]}
                       onClick={() => pulseTag(tag.key)}
                     >
-                      {loadingTags?.[tag.key] ? "Encendiendo..." : "Encender"}
+                      {loadingTags?.[tag.sourceKey] ? "Encendiendo..." : "Encender"}
                     </Button>
 
                     <Button
@@ -233,7 +233,7 @@ function Dashboard() {
 
   return <>
     <div className="min-h-screen bg-slate-100">
-      
+      {/* === SECCIÓN FIJA - SIEMPRE VISIBLE === */}
       <div className="sticky top-0 z-50 bg-slate-100 px-6 pt-6 pb-4 shadow-md">
         <h1 className="text-3xl font-bold text-center">
           Panel de Información Horno y Vulcanizadora
