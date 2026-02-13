@@ -34,6 +34,7 @@ const tagsConfig = [
   { key: "AI..4:1-1", label: "Temperatura", type: "analog", offset: -50, gain: 0.25, unit: "°C", extra: 1, machine: "V" },
   { key: "AM..4:2-1", label: "Tiempo Horno centrífugo", type: "analog", offset: 0, gain: 1, unit: "s", extra: 1, machine: "C" },
   { key: "AM..4:1-1", label: "Tiempo Vulcanización", type: "analog", offset: 0, gain: 1, unit: "s", extra: 1, machine: "V" },
+  { key: "V..4:46-1", label: "Temperatura de Horno", type: "analog", offset: 0, gain: 1, unit: "°C", extra: 0.1, machine: "C" },
   { key: "I..1:10-1", label: "Emergencia", readOnly: true, machine: "G" },
 ];
 
